@@ -37,7 +37,7 @@ public class Main {
     private static void closeDatabase(){
         try {
             db.close();
-            System.out.println("Disconnected from database.");
+            System.out.println("Disconnected from database!");
         } catch (Exception exception) {
             System.out.println("Database disconnection error: " + exception.getMessage());
         }
