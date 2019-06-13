@@ -12,7 +12,7 @@ public class Main {
         openDatabase("Inventory.db");
 // code to get data from, write to the database etc goes here!
         listBooks();
-        insertBook(11, "The Gruffalo", 2);
+        insertBook(11, "The Gruffalo Returns", 2);
         listBooks();
         updateBook(11, "James and the Giant Peach", 1);
         listBooks();
