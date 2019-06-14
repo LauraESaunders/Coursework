@@ -9,6 +9,7 @@ public class Main {
     public static Connection db = null;
 
     public static void main(String[] args) {
+        System.out.println("hi" );
         openDatabase("Inventory.db");
 // code to get data from, write to the database etc goes here!
         listBooks();
