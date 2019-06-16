@@ -1,4 +1,17 @@
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.sqlite.SQLiteConfig;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,14 +24,32 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("hi" );
         openDatabase("Inventory.db");
+
+        ResourceConfig config = new ResourceConfig();
+        config.packages("Controllers");
+        config.register(MultiPartFeature.class);
+        ServletHolder servlet = new ServletHolder(new ServletContainer(config));
+
+        Server server = new Server(8081);
+        ServletContextHandler context = new ServletContextHandler(server, "/");
+        context.addServlet(servlet, "/*");
+
+        try {
+            server.start();
+            System.out.println("Server successfully started.");
+            server.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 // code to get data from, write to the database etc goes here!
-        listBooks();
-        insertBook(11, "The Gruffalo Returns.", 2);
-        listBooks();
-        updateBook(11, "James and the Giant Peach", 1);
-        listBooks();
-        deleteBook(11);
-        listBooks();
+        //listBooks();
+        //insertBook(11, "The Gruffalo Returns.", 2);
+        //listBooks();
+        //updateBook(11, "James and the Giant Peach", 1);
+        //listBooks();
+        //deleteBook(11);
+        //listBooks();
         closeDatabase();
     }
 //Open the database
@@ -43,20 +74,30 @@ public class Main {
             System.out.println("Database disconnection error: " + exception.getMessage());
         }
     }
-
-    public static void listBooks(){
+    @GET
+    @Path("list")
+    @Produces(MediaType.APPLICATION_JSON)
+    //$ curl -s localhost:8081/listBooks
+    public static String listBooks(){
+        System.out.println("things/list");
+        JSONArray list = new JSONArray();
         try {
             PreparedStatement ps = db.prepareStatement("SELECT BookID, Title, AuthorID FROM Books ");
             ResultSet results = ps.executeQuery();
             while (results.next()){
-                int bookId = results.getInt(1);
-                String title = results.getString(2);
-                int authorId = results.getInt(3);
-                System.out.println(bookId + " " + title + " " + authorId);
+
+                JSONObject item = new JSONObject();
+                item.put("BookID", results.getInt(1));
+                item.put("Title", results.getString(2));
+                item.put("AuthorID", results.getInt(3));
+                list.add(item);
             }
+            return list.toString();
 
         } catch (Exception ex){
             System.out.println("Database error: " + ex.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+
         }
 
     }
